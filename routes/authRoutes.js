@@ -31,10 +31,15 @@ router.post("/signup", async (req, res) => {
       expiresIn: "1h",
     });
 
+    delete user["password"];
+
     res.status(201).json({
       status: "success",
       message: "User created successfully",
-      token,
+      data: {
+        ...user,
+        token,
+      },
     });
   } catch (error) {
     res.status(500).json({ message: "Server error" });
@@ -62,6 +67,8 @@ router.post("/login", async (req, res) => {
     const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
       expiresIn: "1h",
     });
+
+    delete user["password"];
 
     res.status(200).json({
       status: "success",
