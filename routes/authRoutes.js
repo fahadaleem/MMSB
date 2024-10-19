@@ -37,7 +37,7 @@ router.post("/signup", async (req, res) => {
       status: "success",
       message: "User created successfully",
       data: {
-        ...user,
+        ...user.toObject(),
         token,
       },
     });
