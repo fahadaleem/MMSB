@@ -52,7 +52,8 @@ router.post("/login", async (req, res) => {
 
   try {
     // Check if the user exists
-    let user = await User.findOne({ email });
+    let user = await User.findOne({ email }).select("-password -__v");
+
     if (!user) {
       return res.status(400).json({ status: "error", message: "Invalid email or password" });
     }
@@ -67,8 +68,6 @@ router.post("/login", async (req, res) => {
     const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
       expiresIn: "1h",
     });
-
-    delete user["password"];
 
     res.status(200).json({
       status: "success",
