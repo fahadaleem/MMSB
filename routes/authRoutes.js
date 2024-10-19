@@ -52,7 +52,7 @@ router.post("/login", async (req, res) => {
 
   try {
     // Check if the user exists
-    let user = await User.findOne({ email }).select("-password -__v");
+    let user = await User.findOne({ email });
 
     if (!user) {
       return res.status(400).json({ status: "error", message: "Invalid email or password" });
@@ -68,17 +68,16 @@ router.post("/login", async (req, res) => {
     const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
       expiresIn: "1h",
     });
-
     res.status(200).json({
       status: "success",
       message: "Logged in successfully",
-      token,
       data: {
-        ...user,
+        ...user.toObject(),
         token,
       },
     });
   } catch (error) {
+    console.log(error);
     res.status(500).json({ status: "error", message: "Server error" });
   }
 });
