@@ -31,13 +31,14 @@ router.post("/signup", async (req, res) => {
       expiresIn: "1h",
     });
 
+    user = { ...user.toObject() };
     delete user["password"];
 
     res.status(201).json({
       status: "success",
       message: "User created successfully",
       data: {
-        ...user.toObject(),
+        ...user,
         token,
       },
     });
@@ -68,11 +69,15 @@ router.post("/login", async (req, res) => {
     const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
       expiresIn: "1h",
     });
+
+    user = { ...user.toObject() };
+    delete user["password"];
+
     res.status(200).json({
       status: "success",
       message: "Logged in successfully",
       data: {
-        ...user.toObject(),
+        ...user,
         token,
       },
     });
