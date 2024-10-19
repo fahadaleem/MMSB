@@ -17,7 +17,7 @@ router.post("/signup", async (req, res) => {
     // Check if the user already exists
     let user = await User.findOne({ email });
     if (user) {
-      return res.status(400).json({ message: "User already exists" });
+      return res.status(400).json({ status: "error", message: "User already exists" });
     }
 
     // Create a new user
@@ -32,6 +32,7 @@ router.post("/signup", async (req, res) => {
     });
 
     res.status(201).json({
+      status: "success",
       message: "User created successfully",
       token,
     });
@@ -48,13 +49,13 @@ router.post("/login", async (req, res) => {
     // Check if the user exists
     let user = await User.findOne({ email });
     if (!user) {
-      return res.status(400).json({ message: "Invalid email or password" });
+      return res.status(400).json({ status: "error", message: "Invalid email or password" });
     }
 
     // Check password
     const isMatch = await user.matchPassword(password);
     if (!isMatch) {
-      return res.status(400).json({ message: "Invalid email or password" });
+      return res.status(400).json({ status: "error", message: "Invalid email or password" });
     }
 
     // Generate JWT token
@@ -63,11 +64,12 @@ router.post("/login", async (req, res) => {
     });
 
     res.status(200).json({
+      status: "success",
       message: "Logged in successfully",
       token,
     });
   } catch (error) {
-    res.status(500).json({ message: "Server error" });
+    res.status(500).json({ status: "error", message: "Server error" });
   }
 });
 
