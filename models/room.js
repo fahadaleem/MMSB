@@ -19,9 +19,6 @@ const RoomSchema = new Schema({
     },
     url: {
       type: String,
-      required: function () {
-        return this.status === "vacant"; // Media URL is required only if the room is vacant
-      },
     },
   },
   created_at: {
