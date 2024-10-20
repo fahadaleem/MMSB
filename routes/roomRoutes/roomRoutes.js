@@ -53,7 +53,7 @@ router.post("/rooms", async (req, res) => {
   } catch (error) {
     console.log(error);
     res.status(500).json({
-      error: "Failed to add/update room",
+      status: "error",
       message: error.message,
     });
   }
