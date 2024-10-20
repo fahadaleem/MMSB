@@ -95,4 +95,26 @@ router.put("/rooms/:id", async (req, res) => {
   }
 });
 
+router.get("/rooms", async (req, res) => {
+  try {
+    // Fetch all rooms from the database
+    const rooms = await Room.find({});
+
+    // Return all room records
+    res.status(200).json({
+      message: "Rooms retrieved successfully",
+      data: rooms,
+      status: "success",
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      status: "error",
+      message: error.message,
+    });
+  }
+});
+
+module.exports = router;
+
 module.exports = router;
