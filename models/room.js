@@ -12,10 +12,6 @@ const RoomSchema = new Schema({
     enum: ["occupied", "vacant"],
     required: true,
   },
-  doctor_id: {
-    type: Schema.Types.ObjectId,
-    ref: "Doctor", // Reference to the Doctor schema
-  },
   media_content: {
     format: {
       type: String,
@@ -35,6 +31,18 @@ const RoomSchema = new Schema({
   updated_at: {
     type: Date,
     default: Date.now,
+  },
+  checkin_time: {
+    type: Date,
+  },
+  checkout_time: {
+    type: Date,
+  },
+  floor_no: {
+    type: Number,
+  },
+  meeting_agenda: {
+    type: String,
   },
 });
 
