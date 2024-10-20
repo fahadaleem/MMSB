@@ -17,10 +17,12 @@ router.post("/rooms", async (req, res) => {
       meeting_agenda,
     } = req.body;
 
+    let isRoomUpdate = false;
     // Check if a room with the same room_id already exists
     let room = await Room.findOne({ room_id });
 
     if (room) {
+      isRoomUpdate = true;
       // If room exists, update the existing room
       room.status = status;
       room.media_content = media_content;
@@ -46,7 +48,7 @@ router.post("/rooms", async (req, res) => {
     await room.save();
 
     res.status(200).json({
-      message: room ? "Room updated successfully" : "New room added successfully",
+      message: isRoomUpdate ? "Room updated successfully" : "New room added successfully",
       data: room,
       status: "success",
     });
