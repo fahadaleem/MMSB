@@ -11,7 +11,7 @@ const screenContentRoutes = require("./routes/screenContentRoutes");
 app.use(cors());
 app.use(express.json());
 
-const PORT = process.env.PORT || 5102;
+const PORT = process.env.PORT || 5104;
 
 app.use("/api", roomRoutes, doctorRoutes, screenContentRoutes, authRoutes);
 

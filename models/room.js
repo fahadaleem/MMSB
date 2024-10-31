@@ -41,6 +41,10 @@ const RoomSchema = new Schema({
   meeting_agenda: {
     type: String,
   },
+  doctor_id: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Doctor",
+  },
 });
 
 module.exports = mongoose.model("Room", RoomSchema);
