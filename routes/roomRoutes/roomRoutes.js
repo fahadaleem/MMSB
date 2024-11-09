@@ -97,17 +97,32 @@ router.put("/rooms/:id", async (req, res) => {
 
 router.get("/rooms", async (req, res) => {
   try {
-    // Fetch all rooms from the database
-    const rooms = await Room.find({});
+    // Extract page and limit from query parameters; set defaults if not provided
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
 
-    // Return all room records
+    // Calculate the starting index of the items for the current page
+    const startIndex = (page - 1) * limit;
+
+    // Retrieve the rooms from the database with pagination
+    const rooms = await Room.find().skip(startIndex).limit(limit);
+
+    // Get the total count of rooms
+    const totalRooms = await Room.countDocuments();
+
     res.status(200).json({
+      status: "success",
       message: "Rooms retrieved successfully",
       data: rooms,
-      status: "success",
+      pagination: {
+        currentPage: page,
+        totalPages: Math.ceil(totalRooms / limit),
+        totalItems: totalRooms,
+        itemsPerPage: limit,
+      },
     });
   } catch (error) {
-    console.error(error);
+    console.error("Error retrieving rooms:", error);
     res.status(500).json({
       status: "error",
       message: error.message,
