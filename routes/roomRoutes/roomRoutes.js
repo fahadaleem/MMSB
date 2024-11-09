@@ -114,6 +114,7 @@ router.get("/rooms", async (req, res) => {
       const startIndex = (page - 1) * (limit || 10);
       // Retrieve rooms with pagination
       rooms = await Room.find()
+        .populate("entities.entity")
         .skip(startIndex)
         .limit(limit || 10);
     }
@@ -147,7 +148,7 @@ router.get("/rooms/:id", async (req, res) => {
     const roomId = req.params.id;
 
     // Find the room by room_id
-    const room = await Room.findOne({ room_id: roomId });
+    const room = await Room.findOne({ room_id: roomId }).populate("entities.entity");
 
     if (!room) {
       return res.status(404).json({

@@ -37,7 +37,7 @@ const RoomSchema = new Schema({
   },
   entities: [
     {
-      entity_id: {
+      entity: {
         type: mongoose.Schema.Types.ObjectId, // Reference to an entity model, if needed
         ref: "Entity",
       },
