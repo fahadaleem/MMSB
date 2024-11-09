@@ -99,27 +99,36 @@ router.get("/rooms", async (req, res) => {
   try {
     // Extract page and limit from query parameters; set defaults if not provided
     const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 10;
+    const limit = parseInt(req.query.limit);
 
-    // Calculate the starting index of the items for the current page
-    const startIndex = (page - 1) * limit;
-
-    // Retrieve the rooms from the database with pagination
-    const rooms = await Room.find().skip(startIndex).limit(limit);
-
-    // Get the total count of rooms
+    let rooms;
     const totalRooms = await Room.countDocuments();
+
+    if (limit === -1) {
+      // If limit is -1, retrieve all rooms without pagination
+      rooms = await Room.find();
+    } else {
+      // Calculate the starting index of the items for the current page
+      const startIndex = (page - 1) * (limit || 10);
+      // Retrieve rooms with pagination
+      rooms = await Room.find()
+        .skip(startIndex)
+        .limit(limit || 10);
+    }
 
     res.status(200).json({
       status: "success",
       message: "Rooms retrieved successfully",
       data: rooms,
-      pagination: {
-        currentPage: page,
-        totalPages: Math.ceil(totalRooms / limit),
-        totalItems: totalRooms,
-        itemsPerPage: limit,
-      },
+      pagination:
+        limit === -1
+          ? null
+          : {
+              currentPage: page,
+              totalPages: Math.ceil(totalRooms / (limit || 10)),
+              totalItems: totalRooms,
+              itemsPerPage: limit || 10,
+            },
     });
   } catch (error) {
     console.error("Error retrieving rooms:", error);
@@ -129,5 +138,7 @@ router.get("/rooms", async (req, res) => {
     });
   }
 });
+
+module.exports = router;
 
 module.exports = router;

@@ -30,37 +30,47 @@ router.post("/entities", async (req, res) => {
   }
 });
 
-// GET endpoint to retrieve paginated entities
 router.get("/entities", async (req, res) => {
   try {
     // Extract page and limit from query parameters; set defaults if not provided
     const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 10;
+    const limit = parseInt(req.query.limit);
 
-    // Calculate the starting index of the items for the current page
-    const startIndex = (page - 1) * limit;
+    let entities;
+    let totalEntities = await Entity.countDocuments();
 
-    // Retrieve the entities from the database with pagination
-    const entities = await Entity.find().skip(startIndex).limit(limit);
-
-    // Get the total count of entities
-    const totalEntities = await Entity.countDocuments();
+    if (limit === -1) {
+      // If limit is -1, retrieve all entities without pagination
+      entities = await Entity.find();
+    } else {
+      // Calculate the starting index of the items for the current page
+      const startIndex = (page - 1) * (limit || 10);
+      // Retrieve entities with pagination
+      entities = await Entity.find()
+        .skip(startIndex)
+        .limit(limit || 10);
+    }
 
     res.status(200).json({
       status: "success",
       message: "Entities retrieved successfully.",
       data: entities,
-      pagination: {
-        currentPage: page,
-        totalPages: Math.ceil(totalEntities / limit),
-        totalItems: totalEntities,
-        itemsPerPage: limit,
-      },
+      pagination:
+        limit === -1
+          ? null
+          : {
+              currentPage: page,
+              totalPages: Math.ceil(totalEntities / (limit || 10)),
+              totalItems: totalEntities,
+              itemsPerPage: limit || 10,
+            },
     });
   } catch (error) {
     console.error("Error retrieving entities:", error);
     res.status(500).json({ status: "error", message: "Failed to retrieve entities" });
   }
 });
+
+module.exports = router;
 
 module.exports = router;
