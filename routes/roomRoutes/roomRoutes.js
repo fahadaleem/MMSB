@@ -141,4 +141,33 @@ router.get("/rooms", async (req, res) => {
   }
 });
 
+// Get room information by room_id
+router.get("/rooms/:id", async (req, res) => {
+  try {
+    const roomId = req.params.id;
+
+    // Find the room by room_id
+    const room = await Room.findOne({ room_id: roomId });
+
+    if (!room) {
+      return res.status(404).json({
+        status: "error",
+        message: "Room not found",
+      });
+    }
+
+    res.status(200).json({
+      status: "success",
+      message: "Room retrieved successfully",
+      data: room,
+    });
+  } catch (error) {
+    console.error("Error retrieving room:", error);
+    res.status(500).json({
+      status: "error",
+      message: error.message,
+    });
+  }
+});
+
 module.exports = router;
