@@ -29,22 +29,27 @@ const RoomSchema = new Schema({
     type: Date,
     default: Date.now,
   },
-  checkin_time: {
-    type: Date,
-  },
-  checkout_time: {
-    type: Date,
-  },
   floor_no: {
     type: Number,
   },
   meeting_agenda: {
     type: String,
   },
-  doctor_id: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "Doctor",
-  },
+  entities: [
+    {
+      entity_id: {
+        type: mongoose.Schema.Types.ObjectId, // Reference to an entity model, if needed
+        ref: "Entity",
+      },
+      check_in: {
+        type: Date,
+        required: true,
+      },
+      check_out: {
+        type: Date,
+      },
+    },
+  ],
 });
 
 module.exports = mongoose.model("Room", RoomSchema);

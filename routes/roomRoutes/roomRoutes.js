@@ -11,10 +11,9 @@ router.post("/rooms", async (req, res) => {
       room_id, // Room unique identifier
       status = "vacant", // Default to "vacant" if not provided
       media_content, // Object containing {format, url} for media content
-      checkin_time, // Date of check-in
-      checkout_time, // Date of check-out
       floor_no, // Floor number where the room is located
       meeting_agenda,
+      entities, // Array of entities with {entity_id, check_in, check_out} for each
     } = req.body;
 
     let isRoomUpdate = false;
@@ -26,21 +25,23 @@ router.post("/rooms", async (req, res) => {
       // If room exists, update the existing room
       room.status = status;
       room.media_content = media_content;
-      room.checkin_time = checkin_time;
-      room.checkout_time = checkout_time;
       room.floor_no = floor_no;
       room.meeting_agenda = meeting_agenda;
       room.updated_at = Date.now(); // Update the 'updated_at' timestamp
+
+      // If entities are provided, update the entities array
+      if (entities && Array.isArray(entities)) {
+        room.entities = entities;
+      }
     } else {
       // If room doesn't exist, create a new one
       room = new Room({
         room_id,
         status,
         media_content,
-        checkin_time,
-        checkout_time,
         floor_no,
         meeting_agenda,
+        entities, // Initialize entities with the provided data
       });
     }
 
@@ -60,40 +61,41 @@ router.post("/rooms", async (req, res) => {
     });
   }
 });
+
 // Update existing room
-router.put("/rooms/:id", async (req, res) => {
-  try {
-    const { id } = req.params;
-    const { status, room_code, hospital_id, assigned_doctor_id, study_id, timing, advertisement_id } = req.body;
+// router.put("/rooms/:id", async (req, res) => {
+//   try {
+//     const { id } = req.params;
+//     const { status, room_code, hospital_id, assigned_doctor_id, study_id, timing, advertisement_id } = req.body;
 
-    // Use updateOne to update the room in a single operation
-    const result = await Room.updateOne(
-      { _id: id }, // filter the room by room_id
-      {
-        $set: {
-          status,
-          room_code,
-          hospital_id,
-          assigned_doctor_id,
-          study_id,
-          timing,
-          advertisement_id,
-        },
-      }
-    );
+//     // Use updateOne to update the room in a single operation
+//     const result = await Room.updateOne(
+//       { _id: id }, // filter the room by room_id
+//       {
+//         $set: {
+//           status,
+//           room_code,
+//           hospital_id,
+//           assigned_doctor_id,
+//           study_id,
+//           timing,
+//           advertisement_id,
+//         },
+//       }
+//     );
 
-    if (result.nModified === 0) {
-      return res.status(404).json({ error: "Room not found or no changes made." });
-    }
+//     if (result.nModified === 0) {
+//       return res.status(404).json({ error: "Room not found or no changes made." });
+//     }
 
-    // find the updated record
-    const updatedRoom = await Room.findOne({ _id: id });
-    res.status(200).json({ message: "Room updated successfully", data: updatedRoom });
-  } catch (error) {
-    console.log(error);
-    res.status(500).json({ error: "Failed to update room" });
-  }
-});
+//     // find the updated record
+//     const updatedRoom = await Room.findOne({ _id: id });
+//     res.status(200).json({ message: "Room updated successfully", data: updatedRoom });
+//   } catch (error) {
+//     console.log(error);
+//     res.status(500).json({ error: "Failed to update room" });
+//   }
+// });
 
 router.get("/rooms", async (req, res) => {
   try {
@@ -138,7 +140,5 @@ router.get("/rooms", async (req, res) => {
     });
   }
 });
-
-module.exports = router;
 
 module.exports = router;
