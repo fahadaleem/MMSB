@@ -7,7 +7,7 @@ const router = express.Router();
 // utility
 function getRoomStatus(roomDetails) {
   const currentTime = new Date();
-
+  console.log(currentTime);
   // Check each entity's check-in and check-out times
   const isOccupied = roomDetails.entities.some((entity) => {
     const checkInTime = entity.check_in ? new Date(entity.check_in) : null;
