@@ -28,7 +28,7 @@ function getRoomStatus(roomDetails) {
     return false; // If either time is invalid, skip this entity
   });
   console.log(roomDetails.room_id, "code");
-  console.log(status, isOccupied ? "occupied" : "vacant");
+  console.log("status", isOccupied ? "occupied" : "vacant");
   // Return the room status based on the result
   return isOccupied ? "occupied" : "vacant";
 }
