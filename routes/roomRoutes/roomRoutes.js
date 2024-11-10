@@ -6,17 +6,27 @@ const router = express.Router();
 
 // utility
 function getRoomStatus(roomDetails) {
+  // Get the current time in UTC
   const currentTime = new Date();
-  console.log(currentTime);
+
   // Check each entity's check-in and check-out times
   const isOccupied = roomDetails.entities.some((entity) => {
     const checkInTime = entity.check_in ? new Date(entity.check_in) : null;
     const checkOutTime = entity.check_out ? new Date(entity.check_out) : null;
 
     // Only check if both check-in and check-out times are valid dates
-    return checkInTime && checkOutTime && currentTime >= checkInTime && currentTime <= checkOutTime;
-  });
+    if (checkInTime && checkOutTime) {
+      // Convert all dates to UTC time values for accurate comparison
+      const currentUtcTime = currentTime.getTime();
+      const checkInUtcTime = checkInTime.getTime();
+      const checkOutUtcTime = checkOutTime.getTime();
 
+      // Compare current UTC time with check-in and check-out times
+      return currentUtcTime >= checkInUtcTime && currentUtcTime <= checkOutUtcTime;
+    }
+
+    return false; // If either time is invalid, skip this entity
+  });
   // Return the room status based on the result
   return isOccupied ? "occupied" : "vacant";
 }
