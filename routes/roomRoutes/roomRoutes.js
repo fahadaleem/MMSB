@@ -47,6 +47,7 @@ router.post("/rooms", async (req, res) => {
 
     // Save the room (either updated or newly created)
     await room.save();
+    req.io.emit("roomUpdate", room);
 
     res.status(200).json({
       message: isRoomUpdate ? "Room updated successfully" : "New room added successfully",
