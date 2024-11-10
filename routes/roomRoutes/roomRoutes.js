@@ -10,11 +10,11 @@ function getRoomStatus(roomDetails) {
 
   // Check each entity's check-in and check-out times
   const isOccupied = roomDetails.entities.some((entity) => {
-    const checkInTime = new Date(entity.check_in);
-    const checkOutTime = new Date(entity.check_out);
+    const checkInTime = entity.check_in ? new Date(entity.check_in) : null;
+    const checkOutTime = entity.check_out ? new Date(entity.check_out) : null;
 
-    // Check if current time falls between check-in and check-out times
-    return currentTime >= checkInTime && currentTime <= checkOutTime;
+    // Only check if both check-in and check-out times are valid dates
+    return checkInTime && checkOutTime && currentTime >= checkInTime && currentTime <= checkOutTime;
   });
 
   // Return the room status based on the result
