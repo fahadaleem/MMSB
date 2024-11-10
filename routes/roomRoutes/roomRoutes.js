@@ -4,6 +4,23 @@ const express = require("express");
 
 const router = express.Router();
 
+// utility
+function getRoomStatus(roomDetails) {
+  const currentTime = new Date();
+
+  // Check each entity's check-in and check-out times
+  const isOccupied = roomDetails.entities.some((entity) => {
+    const checkInTime = new Date(entity.check_in);
+    const checkOutTime = new Date(entity.check_out);
+
+    // Check if current time falls between check-in and check-out times
+    return currentTime >= checkInTime && currentTime <= checkOutTime;
+  });
+
+  // Return the room status based on the result
+  return isOccupied ? "occupied" : "vacant";
+}
+
 // Add or update room information
 router.post("/rooms", async (req, res) => {
   try {
@@ -120,6 +137,11 @@ router.get("/rooms", async (req, res) => {
         .limit(limit || 10);
     }
 
+    rooms = rooms.map((room) => ({
+      ...room.toObject(),
+      status: getRoomStatus(room),
+    }));
+
     res.status(200).json({
       status: "success",
       message: "Rooms retrieved successfully",
@@ -157,6 +179,8 @@ router.get("/rooms/:id", async (req, res) => {
         message: "Room not found",
       });
     }
+    // setting room status based on check_in and checkout_time
+    room.status = getRoomStatus(room);
 
     res.status(200).json({
       status: "success",

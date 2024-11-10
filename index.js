@@ -2,7 +2,7 @@ const express = require("express");
 const db = require("./config/database");
 const cors = require("cors");
 const http = require("http");
-const socketIO = require("socket.io");
+const { Server } = require("socket.io");
 
 const roomRoutes = require("./routes/roomRoutes/roomRoutes");
 const doctorRoutes = require("./routes/doctorRoutes");
@@ -12,9 +12,9 @@ const entityRoutes = require("./routes/entityRoutes");
 
 const app = express();
 const server = http.createServer(app); // Create an HTTP server
-const io = socketIO(server, {
+const io = new Server(server, {
   cors: {
-    origin: "*", // Allow all origins, adjust as needed for security
+    origin: "*", // Allow requests from any origin (adjust as necessary)
     methods: ["GET", "POST"],
   },
 });
@@ -30,8 +30,21 @@ app.use((req, res, next) => {
   next();
 });
 
+io.on("connection", (socket) => {
+  console.log("a user connected");
+
+  // Emit a message back to the client (for testing)
+  socket.emit("message", "Welcome to the WebSocket server!");
+
+  socket.on("disconnect", () => {
+    console.log("user disconnected");
+  });
+});
+
+// Use routes after setting up Socket.IO
 app.use("/api", roomRoutes, doctorRoutes, screenContentRoutes, authRoutes, entityRoutes);
 
-app.listen(PORT, () => {
-  console.log("Server started at: ", PORT);
+// Start the server
+server.listen(PORT, () => {
+  console.log(`Server started at: http://localhost:${PORT}`);
 });
