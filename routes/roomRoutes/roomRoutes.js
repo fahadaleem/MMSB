@@ -28,52 +28,85 @@ function getRoomStatus(roomDetails) {
 }
 
 // Add or update room information
+// POST request: Create a new room if it doesn't already exist
 router.post("/rooms", async (req, res) => {
   try {
-    const {
-      room_id, // Room unique identifier
-      status = "vacant", // Default to "vacant" if not provided
-      media_content, // Object containing {format, url} for media content
-      floor_no, // Floor number where the room is located
-      meeting_agenda,
-      entities, // Array of entities with {entity_id, check_in, check_out} for each
-    } = req.body;
+    const { room_id, status = "vacant", media_content, floor_no, meeting_agenda, entities } = req.body;
 
-    let isRoomUpdate = false;
     // Check if a room with the same room_id already exists
     let room = await Room.findOne({ room_id });
 
     if (room) {
-      isRoomUpdate = true;
-      // If room exists, update the existing room
-      room.status = status;
-      room.media_content = media_content;
-      room.floor_no = floor_no;
-      room.meeting_agenda = meeting_agenda;
-      room.updated_at = Date.now(); // Update the 'updated_at' timestamp
-
-      // If entities are provided, update the entities array
-      if (entities && Array.isArray(entities)) {
-        room.entities = entities;
-      }
-    } else {
-      // If room doesn't exist, create a new one
-      room = new Room({
-        room_id,
-        status,
-        media_content,
-        floor_no,
-        meeting_agenda,
-        entities, // Initialize entities with the provided data
+      // Return an error if the room already exists
+      return res.status(400).json({
+        status: "error",
+        message: "Room already exists.",
       });
     }
 
-    // Save the room (either updated or newly created)
+    // Create a new room if it doesn't already exist
+    room = new Room({
+      room_id,
+      status,
+      media_content,
+      floor_no,
+      meeting_agenda,
+      entities,
+    });
+
+    // Save the new room
+    await room.save();
+    req.io.emit("roomUpdate", room);
+
+    res.status(201).json({
+      message: "New room added successfully",
+      data: room,
+      status: "success",
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({
+      status: "error",
+      message: error.message,
+    });
+  }
+});
+
+// PUT request: Update existing room details
+router.put("/rooms/:room_id", async (req, res) => {
+  try {
+    const { room_id } = req.params;
+    const { status, media_content, floor_no, meeting_agenda, entities } = req.body;
+
+    // Find the room by room_id
+    let room = await Room.findOne({ room_id });
+
+    if (!room) {
+      // Return an error if the room doesn't exist
+      return res.status(404).json({
+        status: "error",
+        message: "Room not found. Please create the room first before updating.",
+      });
+    }
+
+    // Update room details
+    room.status = status || room.status;
+    room.media_content = media_content || room.media_content;
+    room.floor_no = floor_no || room.floor_no;
+    room.meeting_agenda = meeting_agenda || room.meeting_agenda;
+    room.updated_at = Date.now();
+
+    // Update entities if provided
+    if (entities && Array.isArray(entities)) {
+      room.entities = entities;
+    }
+
+    // Save the updated room
     await room.save();
     req.io.emit("roomUpdate", room);
 
     res.status(200).json({
-      message: isRoomUpdate ? "Room updated successfully" : "New room added successfully",
+      message: "Room updated successfully",
       data: room,
       status: "success",
     });
