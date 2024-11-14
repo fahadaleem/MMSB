@@ -119,40 +119,37 @@ router.put("/rooms/:room_id", async (req, res) => {
   }
 });
 
-// Update existing room
-// router.put("/rooms/:id", async (req, res) => {
-//   try {
-//     const { id } = req.params;
-//     const { status, room_code, hospital_id, assigned_doctor_id, study_id, timing, advertisement_id } = req.body;
+// DELETE request: Delete an existing room by room_id
+router.delete("/rooms/:room_id", async (req, res) => {
+  try {
+    const { room_id } = req.params;
 
-//     // Use updateOne to update the room in a single operation
-//     const result = await Room.updateOne(
-//       { _id: id }, // filter the room by room_id
-//       {
-//         $set: {
-//           status,
-//           room_code,
-//           hospital_id,
-//           assigned_doctor_id,
-//           study_id,
-//           timing,
-//           advertisement_id,
-//         },
-//       }
-//     );
+    // Find and delete the room by room_id
+    const room = await Room.findOneAndDelete({ room_id });
 
-//     if (result.nModified === 0) {
-//       return res.status(404).json({ error: "Room not found or no changes made." });
-//     }
+    if (!room) {
+      // Return an error if the room doesn't exist
+      return res.status(404).json({
+        status: "error",
+        message: "Room not found. Unable to delete.",
+      });
+    }
 
-//     // find the updated record
-//     const updatedRoom = await Room.findOne({ _id: id });
-//     res.status(200).json({ message: "Room updated successfully", data: updatedRoom });
-//   } catch (error) {
-//     console.log(error);
-//     res.status(500).json({ error: "Failed to update room" });
-//   }
-// });
+    // Emit an event to notify about the room deletion
+    req.io.emit("roomDeleted", room_id);
+
+    res.status(200).json({
+      message: "Room deleted successfully",
+      status: "success",
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({
+      status: "error",
+      message: error.message,
+    });
+  }
+});
 
 router.get("/rooms", async (req, res) => {
   try {
