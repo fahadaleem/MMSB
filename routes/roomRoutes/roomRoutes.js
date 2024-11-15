@@ -20,7 +20,7 @@ function getRoomStatus(roomDetails) {
 
     console.log(time1InUTC, "time1");
     console.log(time2InUTC, "time2");
-    const currentTimeInUTC = "2024-11-15T21:11:58Z";
+    const currentTimeInUTC = moment.utc("2024-11-15T21:11:58Z").toISOString();
     console.log(currentTimeInUTC, "current");
     const checkInTime = entity.check_in ? new Date(entity.check_in) : null;
     const checkOutTime = entity.check_out ? new Date(entity.check_out) : null;
