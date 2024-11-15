@@ -15,13 +15,31 @@ function getRoomStatus(roomDetails) {
 
   // Check each entity's check-in and check-out times
   const isOccupied = roomDetails.entities.some((entity) => {
-    const time1InUTC = moment.tz(entity.check_in, localTimezone).utc().toISOString();
-    const time2InUTC = moment.tz(entity.check_out, localTimezone).utc().toISOString();
+    // Sample local times and current UTC time (from server)
+    const time1 = "2024-11-16T01:17:00"; // Local time (no timezone offset, will assume local time)
+    const time2 = "2024-11-16T05:17:00"; // Local time (no timezone offset)
+    const current = "2024-11-15T21:11:58Z"; // Server time (UTC)
 
-    console.log(time1InUTC, "time1");
-    console.log(time2InUTC, "time2");
-    const currentTimeInUTC = moment.utc("2024-11-15T21:11:58Z").toISOString();
-    console.log(currentTimeInUTC, "current");
+    // Assuming your local timezone is 'Asia/Karachi' (adjust based on your timezone)
+    const localTimezone = "Asia/Karachi";
+
+    // Convert local times (time1, time2) to UTC
+    const time1InUTC = moment.tz(time1, localTimezone).utc().toISOString();
+    const time2InUTC = moment.tz(time2, localTimezone).utc().toISOString();
+
+    // Convert the current time (server time) to UTC
+    const currentTimeInUTC = moment.utc(current).toISOString();
+
+    console.log("Time1 in UTC:", time1InUTC);
+    console.log("Time2 in UTC:", time2InUTC);
+    console.log("Current Time in UTC:", currentTimeInUTC);
+
+    // Compare current UTC time with the time range (time1 to time2)
+    if (moment(currentTimeInUTC).isBetween(time1InUTC, time2InUTC, null, "[)")) {
+      console.log("The current time is within the range.");
+    } else {
+      console.log("The current time is outside the range.");
+    }
     const checkInTime = entity.check_in ? new Date(entity.check_in) : null;
     const checkOutTime = entity.check_out ? new Date(entity.check_out) : null;
 
