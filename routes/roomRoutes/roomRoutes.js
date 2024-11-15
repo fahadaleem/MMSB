@@ -1,4 +1,5 @@
 const Room = require("../../models/room");
+const moment = require("moment-timezone");
 
 const express = require("express");
 
@@ -10,11 +11,15 @@ function getRoomStatus(roomDetails) {
   const now = new Date();
   const currentTime = new Date(now.getTime() - now.getTimezoneOffset() * 60000).toISOString();
 
-  console.log(currentTime, "current");
-  console.log(new Date().toISOString(), "iso");
-
   // Check each entity's check-in and check-out times
   const isOccupied = roomDetails.entities.some((entity) => {
+    const time1InUTC = moment.tz(entity.check_in, "UTC").format();
+    const time2InUTC = moment.tz(entity.check_out, "UTC").format();
+
+    console.log(time1InUTC, "time1");
+    console.log(time2InUTC, "time2");
+    const currentTimeInUTC = moment.tz(moment().toISOString(), "UTC").format();
+    console.log(currentTimeInUTC, "current");
     const checkInTime = entity.check_in ? new Date(entity.check_in) : null;
     const checkOutTime = entity.check_out ? new Date(entity.check_out) : null;
 
