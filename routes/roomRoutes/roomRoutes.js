@@ -25,6 +25,7 @@ function getRoomStatus(roomDetails) {
 
     // Compare current UTC time with the time range (time1 to time2)
     if (moment(currentTimeInUTC).isBetween(time1InUTC, time2InUTC, null, "[)")) {
+      console.log("here!!! occupied");
       return true;
     } else {
       return false;
