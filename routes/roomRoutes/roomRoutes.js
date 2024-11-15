@@ -11,14 +11,16 @@ function getRoomStatus(roomDetails) {
   const now = new Date();
   const currentTime = new Date(now.getTime() - now.getTimezoneOffset() * 60000).toISOString();
 
+  const localTimezone = "Asia/Karachi"; // Set your local timezone here (adjust accordingly)
+
   // Check each entity's check-in and check-out times
   const isOccupied = roomDetails.entities.some((entity) => {
-    const time1InUTC = moment.tz(entity.check_in, "UTC").format();
-    const time2InUTC = moment.tz(entity.check_out, "UTC").format();
+    const time1InUTC = moment.tz(entity.check_in, localTimezone).utc().toISOString();
+    const time2InUTC = moment.tz(entity.check_out, localTimezone).utc().toISOString();
 
     console.log(time1InUTC, "time1");
     console.log(time2InUTC, "time2");
-    const currentTimeInUTC = moment.tz(moment().toISOString(), "UTC").format();
+    const currentTimeInUTC = "2024-11-15T21:11:58Z";
     console.log(currentTimeInUTC, "current");
     const checkInTime = entity.check_in ? new Date(entity.check_in) : null;
     const checkOutTime = entity.check_out ? new Date(entity.check_out) : null;
