@@ -10,7 +10,7 @@ function getRoomStatus(roomDetails) {
   const now = new Date();
   const currentTime = new Date(now.getTime() - now.getTimezoneOffset() * 60000).toISOString();
 
-  console.log(new Date());
+  console.log(currentTime);
 
   // Check each entity's check-in and check-out times
   const isOccupied = roomDetails.entities.some((entity) => {
