@@ -8,7 +8,7 @@ const router = express.Router();
 // utility
 function getRoomStatus(roomDetails) {
   // Get the current time in UTC
-  const now = new Date();
+  const now = new Date().toISOString();
   const currentTime = new Date(now.getTime() - now.getTimezoneOffset() * 60000).toISOString();
 
   // Check each entity's check-in and check-out times
