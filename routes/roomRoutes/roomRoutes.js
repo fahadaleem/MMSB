@@ -17,7 +17,7 @@ function getRoomStatus(roomDetails) {
   const isOccupied = roomDetails.entities.some((entity) => {
     // Sample local times and current UTC time (from server)
     const time1 = "2024-11-16T01:17:00"; // Local time (no timezone offset, will assume local time)
-    const time2 = "2024-11-16T05:17:00"; // Local time (no timezone offset)
+    const time2 = "2024-11-16T01:20:00"; // Local time (no timezone offset)
     const current = "2024-11-15T21:11:58Z"; // Server time (UTC)
 
     // Assuming your local timezone is 'Asia/Karachi' (adjust based on your timezone)
