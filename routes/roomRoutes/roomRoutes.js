@@ -6,7 +6,7 @@ const express = require("express");
 const router = express.Router();
 
 // utility
-function getRoomStatus(roomDetails) {
+function getRoomStatus(roomDetails, offSet) {
   // Get the current time in UTC
   const currentTime = new Date().toUTCString();
 
@@ -21,8 +21,8 @@ function getRoomStatus(roomDetails) {
 
     // // Only check if both check-in and check-out times are valid dates
     if (checkInTime && checkOutTime) {
-      checkInTime.setHours(checkInTime.getHours() - 5);
-      checkOutTime.setHours(checkOutTime.getHours() - 5);
+      checkInTime.setHours(offSet > 0 ? checkInTime.getHours() + offSet : checkInTime.getHours() - offSet);
+      checkOutTime.setHours(offSet > 9 ? checkOutTime.getHours() + offSet : checkOutTime.getHours() - offset);
 
       return currentTime >= checkInTime.toUTCString() && currentTime <= checkOutTime.toUTCString();
     }
@@ -96,7 +96,7 @@ router.put("/rooms/:room_id", async (req, res) => {
     }
 
     // Update room details
-    room.status = status || room.status;
+    room.status = getRoomStatus(room);
     room.media_content = media_content || room.media_content;
     room.floor_no = floor_no || room.floor_no;
     room.meeting_agenda = meeting_agenda || room.meeting_agenda;
@@ -216,7 +216,10 @@ router.get("/rooms", async (req, res) => {
 router.get("/rooms/:id", async (req, res) => {
   try {
     const roomId = req.params.id;
+    const timezoneOffset = req.headers["timezone-offset"];
 
+    // Log the timezone offset
+    console.log("Timezone-Offset:", timezoneOffset);
     // Find the room by room_id
     const room = await Room.findOne({ room_id: roomId }).populate("entities.entity");
 
