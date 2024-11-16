@@ -22,6 +22,8 @@ function getRoomStatus(roomDetails) {
     // // Only check if both check-in and check-out times are valid dates
     if (checkInTime && checkOutTime) {
       // Compare current UTC time with check-in and check-out times
+      console.log(currentTime >= checkInTime, "currentTime >= checkInTime");
+      console.log(currentTime <= checkOutTime, "currentTime <= checkOutTime");
       return currentTime >= checkInTime && currentTime <= checkOutTime;
     }
 
