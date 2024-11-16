@@ -10,6 +10,8 @@ function getRoomStatus(roomDetails, offSet) {
   // Get the current time in UTC
   const currentTime = new Date().toUTCString();
 
+  const [hours, mins] = offSet.split(",");
+
   // Check each entity's check-in and check-out times
   const isOccupied = roomDetails.entities.some((entity) => {
     // Assuming your local timezone is 'Asia/Karachi' (adjust based on your timezone)
@@ -21,8 +23,21 @@ function getRoomStatus(roomDetails, offSet) {
 
     // // Only check if both check-in and check-out times are valid dates
     if (checkInTime && checkOutTime) {
-      checkInTime.setHours(offSet > 0 ? checkInTime.getHours() + offSet : checkInTime.getHours() - offSet);
-      checkOutTime.setHours(offSet > 0 ? checkOutTime.getHours() + offSet : checkOutTime.getHours() - offSet);
+      const hoursInNumber = Number(hours);
+      checkInTime.setHours(
+        hoursInNumber > 0 ? checkInTime.getHours() - hoursInNumber : checkInTime.getHours() + hoursInNumber
+      );
+      checkOutTime.setHours(
+        hoursInNumber > 0 ? checkOutTime.getHours() + hoursInNumber : checkOutTime.getHours() - hoursInNumber
+      );
+
+      const minsInNumber = Number(mins);
+      checkInTime.setMinutes(
+        minsInNumber > 0 ? checkInTime.getHours() - minsInNumber : checkInTime.getHours() - minsInNumber
+      );
+      checkOutTime.setMinutes(
+        minsInNumber > 0 ? checkOutTime.getHours() + minsInNumber : checkOutTime.getHours() + minsInNumber
+      );
 
       return currentTime >= checkInTime.toUTCString() && currentTime <= checkOutTime.toUTCString();
     }
@@ -82,6 +97,7 @@ router.post("/rooms", async (req, res) => {
 router.put("/rooms/:room_id", async (req, res) => {
   try {
     const { room_id } = req.params;
+    const timezoneOffset = req.headers["timezone-offset"];
     const { status, media_content, floor_no, meeting_agenda, entities } = req.body;
 
     // Find the room by room_id
@@ -96,7 +112,7 @@ router.put("/rooms/:room_id", async (req, res) => {
     }
 
     // Update room details
-    room.status = getRoomStatus(room);
+    room.status = getRoomStatus(room, timezoneOffset);
     room.media_content = media_content || room.media_content;
     room.floor_no = floor_no || room.floor_no;
     room.meeting_agenda = meeting_agenda || room.meeting_agenda;
@@ -164,6 +180,7 @@ router.delete("/rooms/:room_id", async (req, res) => {
 
 router.get("/rooms", async (req, res) => {
   try {
+    const timezoneOffset = req.headers["timezone-offset"];
     // Extract page and limit from query parameters; set defaults if not provided
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit);
@@ -186,7 +203,7 @@ router.get("/rooms", async (req, res) => {
 
     rooms = rooms.map((room) => ({
       ...room.toObject(),
-      status: getRoomStatus(room),
+      status: getRoomStatus(room, timezoneOffset),
     }));
 
     res.status(200).json({
@@ -218,8 +235,6 @@ router.get("/rooms/:id", async (req, res) => {
     const roomId = req.params.id;
     const timezoneOffset = req.headers["timezone-offset"];
 
-    // Log the timezone offset
-    console.log("Timezone-Offset:", timezoneOffset);
     // Find the room by room_id
     const room = await Room.findOne({ room_id: roomId }).populate("entities.entity");
 
@@ -230,7 +245,7 @@ router.get("/rooms/:id", async (req, res) => {
       });
     }
     // setting room status based on check_in and checkout_time
-    room.status = getRoomStatus(room);
+    room.status = getRoomStatus(room, timezoneOffset);
 
     res.status(200).json({
       status: "success",
