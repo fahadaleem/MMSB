@@ -22,7 +22,7 @@ function getRoomStatus(roomDetails, offSet) {
     // // Only check if both check-in and check-out times are valid dates
     if (checkInTime && checkOutTime) {
       checkInTime.setHours(offSet > 0 ? checkInTime.getHours() + offSet : checkInTime.getHours() - offSet);
-      checkOutTime.setHours(offSet > 9 ? checkOutTime.getHours() + offSet : checkOutTime.getHours() - offset);
+      checkOutTime.setHours(offSet > 9 ? checkOutTime.getHours() + offSet : checkOutTime.getHours() - offSet);
 
       return currentTime >= checkInTime.toUTCString() && currentTime <= checkOutTime.toUTCString();
     }
