@@ -109,6 +109,11 @@ router.put("/rooms/:room_id", async (req, res) => {
 
     // Save the updated room
     await room.save();
+
+    // Populate the entities field
+    room = await room.populate("entities.entity"); // assuming 'entities.entity' is a reference to another model
+
+    // Emit the room update event
     req.io.emit("roomUpdate", room);
 
     res.status(200).json({
