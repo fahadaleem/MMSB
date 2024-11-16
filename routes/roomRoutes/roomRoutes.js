@@ -22,7 +22,7 @@ function getRoomStatus(roomDetails) {
 
     // Convert the current time (server time) to UTC
     const currentTimeInUTC = moment.utc(now).toISOString();
-
+    console.log(currentTimeInUTC, "testing!");
     // Compare current UTC time with the time range (time1 to time2)
     if (moment(currentTimeInUTC).isBetween(time1InUTC, time2InUTC, null, "[)")) {
       console.log("The current time is within the range.");
