@@ -8,37 +8,24 @@ const router = express.Router();
 // utility
 function getRoomStatus(roomDetails) {
   // Get the current time in UTC
-  const now = new Date().toISOString();
-  // const currentTime = new Date(now.getTime() - now.getTimezoneOffset() * 60000).toISOString();
+  const currentTime = new Date().toUTCString();
 
   // Check each entity's check-in and check-out times
   const isOccupied = roomDetails.entities.some((entity) => {
     // Assuming your local timezone is 'Asia/Karachi' (adjust based on your timezone)
-    const localTimezone = "Asia/Karachi";
 
-    // Convert local times (time1, time2) to UTC
-    const time1InUTC = moment.tz(entity.check_in, localTimezone).utc().toISOString();
-    const time2InUTC = moment.tz(entity.check_out, localTimezone).utc().toISOString();
-
-    // Convert the current time (server time) to UTC
-    const currentTimeInUTC = moment.utc(now).toISOString();
-    console.log(currentTimeInUTC, "testing!");
     // Compare current UTC time with the time range (time1 to time2)
-    if (moment(currentTimeInUTC).isBetween(time1InUTC, time2InUTC, null, "[)")) {
-      console.log("The current time is within the range.");
-    } else {
-      console.log("The current time is outside the range.");
-    }
-    // const checkInTime = entity.check_in ? new Date(entity.check_in) : null;
-    // const checkOutTime = entity.check_out ? new Date(entity.check_out) : null;
+
+    const checkInTime = entity.check_in ? new Date(entity.check_in).toUTCString() : null;
+    const checkOutTime = entity.check_out ? new Date(entity.check_out).toUTCString() : null;
 
     // // Only check if both check-in and check-out times are valid dates
-    // if (checkInTime && checkOutTime) {
-    //   // Compare current UTC time with check-in and check-out times
-    //   return new Date(currentTime) >= checkInTime && new Date(currentTime) <= checkOutTime;
-    // }
+    if (checkInTime && checkOutTime) {
+      // Compare current UTC time with check-in and check-out times
+      return currentTime >= checkInTime && currentTime <= checkOutTime;
+    }
 
-    // return false; // If either time is invalid, skip this entity
+    return false; // If either time is invalid, skip this entity
   });
   // Return the room status based on the result
   return isOccupied ? "occupied" : "vacant";
@@ -233,6 +220,7 @@ router.get("/rooms/:id", async (req, res) => {
       });
     }
     // setting room status based on check_in and checkout_time
+    console.log("status:", getRoomStatus(room));
     room.status = getRoomStatus(room);
 
     res.status(200).json({
