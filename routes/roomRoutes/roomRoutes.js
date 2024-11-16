@@ -16,15 +16,15 @@ function getRoomStatus(roomDetails) {
 
     // Compare current UTC time with the time range (time1 to time2)
 
-    const checkInTime = entity.check_in ? new Date(entity.check_in).toUTCString() : null;
-    const checkOutTime = entity.check_out ? new Date(entity.check_out).toUTCString() : null;
+    const checkInTime = entity.check_in ? new Date(entity.check_in) : null;
+    const checkOutTime = entity.check_out ? new Date(entity.check_out) : null;
 
     // // Only check if both check-in and check-out times are valid dates
     if (checkInTime && checkOutTime) {
-      // Compare current UTC time with check-in and check-out times
-      console.log(currentTime >= checkInTime, "currentTime >= checkInTime");
-      console.log(currentTime <= checkOutTime, "currentTime <= checkOutTime");
-      return currentTime >= checkInTime && currentTime <= checkOutTime;
+      checkInTime.setHours(checkInTime.getHours() - 5);
+      checkOutTime.setHours(checkOutTime.getHours() - 5);
+
+      return currentTime >= checkInTime.toUTCString() && currentTime <= checkOutTime.toUTCString();
     }
 
     return false; // If either time is invalid, skip this entity
