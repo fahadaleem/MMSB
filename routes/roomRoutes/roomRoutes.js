@@ -222,7 +222,6 @@ router.get("/rooms/:id", async (req, res) => {
       });
     }
     // setting room status based on check_in and checkout_time
-    console.log("status:", getRoomStatus(room));
     room.status = getRoomStatus(room);
 
     res.status(200).json({
