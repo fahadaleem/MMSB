@@ -25,10 +25,9 @@ function getRoomStatus(roomDetails) {
 
     // Compare current UTC time with the time range (time1 to time2)
     if (moment(currentTimeInUTC).isBetween(time1InUTC, time2InUTC, null, "[)")) {
-      console.log("here!!! occupied");
-      return true;
+      console.log("The current time is within the range.");
     } else {
-      return false;
+      console.log("The current time is outside the range.");
     }
     // const checkInTime = entity.check_in ? new Date(entity.check_in) : null;
     // const checkOutTime = entity.check_out ? new Date(entity.check_out) : null;
