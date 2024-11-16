@@ -8,8 +8,7 @@ const router = express.Router();
 // utility
 function getRoomStatus(roomDetails, offSet) {
   // Get the current time in UTC
-  const currentTime = new Date().toUTCString();
-
+  const currentTime = new Date();
   const [hours, mins] = offSet.split(",");
 
   // Check each entity's check-in and check-out times
@@ -24,22 +23,17 @@ function getRoomStatus(roomDetails, offSet) {
     // // Only check if both check-in and check-out times are valid dates
     if (checkInTime && checkOutTime) {
       const hoursInNumber = Number(hours);
-      checkInTime.setHours(
-        hoursInNumber > 0 ? checkInTime.getHours() - hoursInNumber : checkInTime.getHours() + hoursInNumber
-      );
-      checkOutTime.setHours(
-        hoursInNumber > 0 ? checkOutTime.getHours() + hoursInNumber : checkOutTime.getHours() - hoursInNumber
-      );
-
       const minsInNumber = Number(mins);
-      checkInTime.setMinutes(
-        minsInNumber > 0 ? checkInTime.getHours() - minsInNumber : checkInTime.getHours() - minsInNumber
-      );
-      checkOutTime.setMinutes(
-        minsInNumber > 0 ? checkOutTime.getHours() + minsInNumber : checkOutTime.getHours() + minsInNumber
+
+      currentTime.setHours(
+        hoursInNumber > 0 ? currentTime.getHours() + hoursInNumber : currentTime.getHours() - hoursInNumber
       );
 
-      return currentTime >= checkInTime.toUTCString() && currentTime <= checkOutTime.toUTCString();
+      currentTime.setMinutes(
+        minsInNumber > 0 ? currentTime.getMinutes() + minsInNumber : currentTime.getMinutes() - minsInNumber
+      );
+
+      return currentTime >= checkInTime && currentTime <= checkOutTime;
     }
 
     return false; // If either time is invalid, skip this entity
