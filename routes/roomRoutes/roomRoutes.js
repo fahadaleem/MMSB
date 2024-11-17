@@ -11,30 +11,24 @@ function getRoomStatus(roomDetails, offSet) {
   const currentTime = new Date();
   const [hours, mins] = offSet.split(",");
 
+  const hoursInNumber = Number(hours);
+  const minsInNumber = Number(mins);
+  currentTime.setHours(
+    hoursInNumber > 0 ? currentTime.getHours() + hoursInNumber : currentTime.getHours() - hoursInNumber
+  );
+  currentTime.setMinutes(
+    minsInNumber > 0 ? currentTime.getMinutes() + minsInNumber : currentTime.getMinutes() - minsInNumber
+  );
+
   // Check each entity's check-in and check-out times
   const isOccupied = roomDetails.entities.some((entity) => {
     // Assuming your local timezone is 'Asia/Karachi' (adjust based on your timezone)
-
-    // Compare current UTC time with the time range (time1 to time2)
 
     const checkInTime = entity.check_in ? new Date(entity.check_in) : null;
     const checkOutTime = entity.check_out ? new Date(entity.check_out) : null;
 
     // // Only check if both check-in and check-out times are valid dates
     if (checkInTime && checkOutTime) {
-      const hoursInNumber = Number(hours);
-      const minsInNumber = Number(mins);
-
-      currentTime.setHours(
-        hoursInNumber > 0 ? currentTime.getHours() + hoursInNumber : currentTime.getHours() - hoursInNumber
-      );
-
-      currentTime.setMinutes(
-        minsInNumber > 0 ? currentTime.getMinutes() + minsInNumber : currentTime.getMinutes() - minsInNumber
-      );
-      console.log(currentTime);
-      console.log(checkInTime);
-      console.log(checkOutTime);
       return currentTime >= checkInTime && currentTime <= checkOutTime;
     }
 
