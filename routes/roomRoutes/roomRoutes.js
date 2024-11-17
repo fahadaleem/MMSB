@@ -32,6 +32,9 @@ function getRoomStatus(roomDetails, offSet) {
       console.log(currentTime);
       console.log(checkInTime);
       console.log(checkOutTime);
+      console.log(currentTime >= checkInTime);
+      console.log(currentTime <= checkOutTime);
+      console.log(currentTime >= checkInTime && currentTime <= checkOutTime);
       return currentTime >= checkInTime && currentTime <= checkOutTime;
     }
 
