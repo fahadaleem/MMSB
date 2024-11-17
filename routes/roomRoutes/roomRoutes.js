@@ -32,12 +32,15 @@ function getRoomStatus(roomDetails, offSet) {
       currentTime.setMinutes(
         minsInNumber > 0 ? currentTime.getMinutes() + minsInNumber : currentTime.getMinutes() - minsInNumber
       );
-
+      console.log(currentTime);
+      console.log(checkInTime);
+      console.log(checkOutTime);
       return currentTime >= checkInTime && currentTime <= checkOutTime;
     }
 
     return false; // If either time is invalid, skip this entity
   });
+
   // Return the room status based on the result
   return isOccupied ? "occupied" : "vacant";
 }
