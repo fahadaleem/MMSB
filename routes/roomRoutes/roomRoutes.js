@@ -44,7 +44,38 @@ function getRoomStatus(roomDetails, offSet) {
   // Return the room status based on the result
   return isOccupied ? "occupied" : "vacant";
 }
+function getRoomStatusWithTimeZone(roomDetails) {
+  // Get the current time in Riyadh timezone
+  const currentTime = new Date().toLocaleString("en-US", { timeZone: "Asia/Riyadh" });
+  const currentDateTime = new Date(currentTime);
 
+  // Check each entity's check-in and check-out times
+  const isOccupied = roomDetails.entities.some((entity) => {
+    // Convert check-in and check-out to Riyadh timezone
+    const checkInTime = entity.check_in
+      ? new Date(new Date(entity.check_in).toLocaleString("en-US", { timeZone: "Asia/Riyadh" }))
+      : null;
+
+    const checkOutTime = entity.check_out
+      ? new Date(new Date(entity.check_out).toLocaleString("en-US", { timeZone: "Asia/Riyadh" }))
+      : null;
+
+    // Only check if both check-in and check-out times are valid dates
+    if (checkInTime && checkOutTime) {
+      console.log("Current Time (Riyadh):", currentDateTime);
+      console.log("Check-In Time (Riyadh):", checkInTime);
+      console.log("Check-Out Time (Riyadh):", checkOutTime);
+      console.log("Is Between Check-In and Check-Out:", currentDateTime >= checkInTime && currentDateTime <= checkOutTime);
+
+      return currentDateTime >= checkInTime && currentDateTime <= checkOutTime;
+    }
+
+    return false; // If either time is invalid, skip this entity
+  });
+
+  // Return the room status based on the result
+  return isOccupied ? "occupied" : "vacant";
+}
 // Add or update room information
 // POST request: Create a new room if it doesn't already exist
 router.post("/rooms", async (req, res) => {
@@ -241,7 +272,7 @@ router.get("/rooms/:id", async (req, res) => {
       });
     }
     // setting room status based on check_in and checkout_time
-    room.status = getRoomStatus(room, timezoneOffset);
+    room.status = getRoomStatusWithTimeZone(room, timezoneOffset);
 
     res.status(200).json({
       status: "success",
