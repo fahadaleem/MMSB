@@ -46,36 +46,82 @@ function getRoomStatus(roomDetails, offSet) {
 }
 function getRoomStatusWithTimeZone(roomDetails) {
   // Get the current time in Riyadh timezone
-  const currentTime = new Date().toLocaleString("en-US", { timeZone: "Asia/Riyadh" });
-  const currentDateTime = new Date(currentTime);
+  const currentDateTime = moment.tz("Asia/Riyadh");
 
-  // Check each entity's check-in and check-out times
+  console.log("Current Time (Riyadh):", currentDateTime.format());
+
+  // Check if any entry's check-in and check-out matches the current time
   const isOccupied = roomDetails.entities.some((entity) => {
-    // Convert check-in and check-out to Riyadh timezone
+    // Parse check-in and check-out times in Riyadh timezone
     const checkInTime = entity.check_in
-      ? new Date(new Date(entity.check_in).toLocaleString("en-US", { timeZone: "Asia/Riyadh" }))
+      ? moment.tz(entity.check_in, "Asia/Riyadh")
       : null;
 
     const checkOutTime = entity.check_out
-      ? new Date(new Date(entity.check_out).toLocaleString("en-US", { timeZone: "Asia/Riyadh" }))
+      ? moment.tz(entity.check_out, "Asia/Riyadh")
       : null;
 
-    // Only check if both check-in and check-out times are valid dates
+    // Validate the presence of both check-in and check-out times
     if (checkInTime && checkOutTime) {
-      console.log("Current Time (Riyadh):", currentDateTime);
-      console.log("Check-In Time (Riyadh):", checkInTime);
-      console.log("Check-Out Time (Riyadh):", checkOutTime);
-      console.log("Is Between Check-In and Check-Out:", currentDateTime >= checkInTime && currentDateTime <= checkOutTime);
+      console.log("Check-In Time (Riyadh):", checkInTime.format());
+      console.log("Check-Out Time (Riyadh):", checkOutTime.format());
 
-      return currentDateTime >= checkInTime && currentDateTime <= checkOutTime;
+      // Check if the current time is between check-in and check-out
+      if (currentDateTime.isBetween(checkInTime, checkOutTime, null, "[)")) {
+        console.log("Room is occupied during this time.");
+        return true; // Room is occupied if current time is between check-in and check-out
+      }
     }
 
-    return false; // If either time is invalid, skip this entity
+    return false; // If no match is found
   });
 
   // Return the room status based on the result
   return isOccupied ? "occupied" : "vacant";
 }
+
+function getActiveEntityWithTimeZone(roomDetails) {
+  // Get the current time in Riyadh timezone
+  const currentDateTime = moment.tz("Asia/Riyadh");
+
+  console.log("Current Time (Riyadh):", currentDateTime.format());
+
+  // Check if any entry's check-in and check-out matches the current time
+  let occupiedEntity = null;
+
+  const isOccupied = roomDetails.entities.some((entity) => {
+    // Parse check-in and check-out times in Riyadh timezone
+    const checkInTime = entity.check_in
+      ? moment.tz(entity.check_in, "Asia/Riyadh")
+      : null;
+
+    const checkOutTime = entity.check_out
+      ? moment.tz(entity.check_out, "Asia/Riyadh")
+      : null;
+
+    // Validate the presence of both check-in and check-out times
+    if (checkInTime && checkOutTime) {
+      console.log("Check-In Time (Riyadh):", checkInTime.format());
+      console.log("Check-Out Time (Riyadh):", checkOutTime.format());
+
+      // Check if the current time is between check-in and check-out
+      if (currentDateTime.isBetween(checkInTime, checkOutTime, null, "[)")) {
+        occupiedEntity = entity; // Store the occupied entity
+        return true; // Room is occupied if current time is between check-in and check-out
+      }
+    }
+
+    return false; // If no match is found
+  });
+
+  // Return the room status and the occupied entity
+  return {
+    status: isOccupied ? "occupied" : "vacant",
+    occupiedEntity: occupiedEntity,
+  };
+}
+
+
 // Add or update room information
 // POST request: Create a new room if it doesn't already exist
 router.post("/rooms", async (req, res) => {
@@ -271,13 +317,13 @@ router.get("/rooms/:id", async (req, res) => {
         message: "Room not found",
       });
     }
+    const active = getActiveEntityWithTimeZone(room, timezoneOffset);
     // setting room status based on check_in and checkout_time
-    room.status = getRoomStatusWithTimeZone(room, timezoneOffset);
-
+    room.status = active.status;
     res.status(200).json({
       status: "success",
       message: "Room retrieved successfully",
-      data: room,
+      data: {...room.toObject(), activeEntity: active.occupiedEntity },
     });
   } catch (error) {
     console.error("Error retrieving room:", error);
