@@ -144,13 +144,12 @@ router.put("/rooms/:room_id", async (req, res) => {
 });
 
 // DELETE request: Delete an existing room by room_id
-router.delete("/rooms/:room_id", async (req, res) => {
+router.delete("/rooms/:_id", async (req, res) => {
   try {
-    const { room_id } = req.params;
+    const { _id } = req.params;
 
     // Find and delete the room by room_id
-    const room = await Room.findOneAndDelete({ room_id });
-
+    const room = await Room.findOneAndDelete({ _id });
     if (!room) {
       // Return an error if the room doesn't exist
       return res.status(404).json({
@@ -160,7 +159,7 @@ router.delete("/rooms/:room_id", async (req, res) => {
     }
 
     // Emit an event to notify about the room deletion
-    req.io.emit("roomDeleted", room_id);
+    req.io.emit("roomDeleted", room?.room_id);
 
     res.status(200).json({
       message: "Room deleted successfully",
