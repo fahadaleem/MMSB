@@ -71,6 +71,34 @@ router.get("/entities", async (req, res) => {
   }
 });
 
-module.exports = router;
+// PUT endpoint to update an entity
+router.put("/entities/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const updateData = req.body;
+
+    // Update the entity with the provided data
+    const updatedEntity = await Entity.findByIdAndUpdate(id, updateData, {
+      new: true, // Return the updated document
+      runValidators: true, // Validate data before updating
+    });
+
+    if (!updatedEntity) {
+      return res.status(404).json({
+        status: "error",
+        message: "Entity not found",
+      });
+    }
+
+    res.status(200).json({
+      status: "success",
+      message: "Entity updated successfully.",
+      data: updatedEntity,
+    });
+  } catch (error) {
+    console.error("Error updating entity:", error);
+    res.status(500).json({ status: "error", message: "Failed to update entity" });
+  }
+});
 
 module.exports = router;
