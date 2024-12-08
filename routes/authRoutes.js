@@ -87,4 +87,45 @@ router.post("/login", async (req, res) => {
   }
 });
 
+// Change Password Route
+router.patch("/change-password", async (req, res) => {
+  const { email, current_password, new_password } = req.body;
+
+  try {
+    // Find the user by email
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      return res.status(404).json({
+        status: "error",
+        message: "User not found",
+      });
+    }
+
+    // Verify the current password
+    const isMatch = await user.matchPassword(current_password);
+    if (!isMatch) {
+      return res.status(400).json({
+        status: "error",
+        message: "Current password is incorrect",
+      });
+    }
+
+    // Update the user's password
+    user.password = new_password;
+    await user.save();
+
+    res.status(200).json({
+      status: "success",
+      message: "Password updated successfully",
+    });
+  } catch (error) {
+    console.error("Error changing password:", error);
+    res.status(500).json({
+      status: "error",
+      message: "Server error",
+    });
+  }
+});
+
 module.exports = router;
