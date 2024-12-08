@@ -101,4 +101,28 @@ router.put("/entities/:id", async (req, res) => {
   }
 });
 
+router.delete("/entities/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // Find the entity by ID and delete it
+    const deletedEntity = await Entity.findByIdAndDelete(id);
+
+    if (!deletedEntity) {
+      return res.status(404).json({
+        status: "error",
+        message: "Entity not found",
+      });
+    }
+
+    res.status(200).json({
+      status: "success",
+      message: "Entity deleted successfully.",
+    });
+  } catch (error) {
+    console.error("Error deleting entity:", error);
+    res.status(500).json({ status: "error", message: "Failed to delete entity" });
+  }
+});
+
 module.exports = router;
