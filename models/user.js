@@ -21,12 +21,9 @@ const UserSchema = new mongoose.Schema({
     type: Date,
     default: Date.now,
   },
-  client_name: {
-    type: String,
-    required: true,
-  },
-  client_img_url: {
-    type: String,
+  client: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Client", // Reference to the Client model
   },
 });
 

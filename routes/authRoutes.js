@@ -1,6 +1,7 @@
 // routes/auth.js
 const express = require("express");
 const User = require("../models/user");
+const Client = require("../models/client");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const router = express.Router();
@@ -11,8 +12,7 @@ dotenv.config();
 
 // Signup Route
 router.post("/signup", async (req, res) => {
-  const { name, email, password, client_name, client_img_url } = req.body;
-
+  const { name, email, password, client_name, client_image_url } = req.body;
   try {
     // Check if the user already exists
     let user = await User.findOne({ email });
@@ -20,10 +20,19 @@ router.post("/signup", async (req, res) => {
       return res.status(400).json({ status: "error", message: "User already exists" });
     }
 
-    // Create a new user
-    user = new User({ name, email, password, client_name, client_img_url });
+    // Check if the client already exists
+    let client = await Client.findOne({ client_name });
 
-    // Save user to database
+    // If client doesn't exist, create a new client
+    if (!client) {
+      client = new Client({ client_name, client_image_url });
+      await client.save();
+    }
+
+    // Create a new user and associate it with the client
+    user = new User({ name, email, password, client: client._id }); // Add client reference to user
+
+    // Hash password before saving
     await user.save();
 
     // Generate JWT token
@@ -31,6 +40,7 @@ router.post("/signup", async (req, res) => {
       expiresIn: "1h",
     });
 
+    // Remove password from user data before sending response
     user = { ...user.toObject() };
     delete user["password"];
 
@@ -39,11 +49,13 @@ router.post("/signup", async (req, res) => {
       message: "User created successfully",
       data: {
         ...user,
+        client: { client_name: client.client_name, client_image_url: client.client_image_url },
         token,
       },
     });
   } catch (error) {
-    res.status(500).json({ message: "Server error" });
+    console.log(error);
+    res.status(500).json({ status: "error", message: "Server error" });
   }
 });
 
@@ -53,7 +65,7 @@ router.post("/login", async (req, res) => {
 
   try {
     // Check if the user exists
-    let user = await User.findOne({ email });
+    let user = await User.findOne({ email }).populate("client"); // Populate client info
 
     if (!user) {
       return res.status(400).json({ status: "error", message: "Invalid email or password" });
@@ -73,13 +85,19 @@ router.post("/login", async (req, res) => {
     user = { ...user.toObject() };
     delete user["password"];
 
+    // Include client information in the response
+    const responseData = {
+      ...user,
+      client: user.client
+        ? { client_name: user.client.client_name, client_image_url: user.client.client_image_url }
+        : null,
+      token,
+    };
+
     res.status(200).json({
       status: "success",
       message: "Logged in successfully",
-      data: {
-        ...user,
-        token,
-      },
+      data: responseData,
     });
   } catch (error) {
     console.log(error);
@@ -88,22 +106,41 @@ router.post("/login", async (req, res) => {
 });
 
 // Change Password Route
+
 router.patch("/update-profile", async (req, res) => {
-  const { email, current_password, new_password, client_name, client_img_url } = req.body;
+  const { email, current_password, new_password, client_name, client_image_url } = req.body;
 
   try {
-    // Find the user by email
-    const user = await User.findOne({ email });
+    // Check if the request is to update both user and client fields
+    let user;
+    let client;
+    user = await User.findOne({ email });
+    if (client_image_url) {
+      client = await Client.findById(user.client); // Assuming client email is unique
+      if (!client) {
+        return res.status(404).json({
+          status: "error",
+          message: "Client not found",
+        });
+      }
 
-    if (!user) {
-      return res.status(404).json({
-        status: "error",
-        message: "User not found",
-      });
+      // Update client_img_url if provided
+      if (client_image_url) {
+        await client.updateOne({ client_image_url });
+      }
     }
 
     // If the current_password and new_password are provided, validate and update the password
     if (current_password && new_password) {
+      user = await User.findOne({ email });
+
+      if (!user) {
+        return res.status(404).json({
+          status: "error",
+          message: "User not found",
+        });
+      }
+
       const isMatch = await user.matchPassword(current_password);
       if (!isMatch) {
         return res.status(400).json({
@@ -114,24 +151,23 @@ router.patch("/update-profile", async (req, res) => {
 
       // Update the user's password
       user.password = new_password;
+
+      // Save the updated user details
+      await user.save();
     }
 
-    // Update client_name if provided
-    if (client_name) {
-      user.client_name = client_name;
-    }
+    // Send a combined success response
 
-    // Update client_img_url if provided
-    if (client_img_url) {
-      user.client_img_url = client_img_url;
-    }
-
-    // Save the updated user details
-    await user.save();
+    user = await User.findOne({ email }).populate("client");
+    user = { ...user.toObject() };
+    delete user["password"];
 
     res.status(200).json({
       status: "success",
-      message: "Profile updated successfully",
+      message: "Profile updated successfully!!",
+      data: {
+        ...user,
+      },
     });
   } catch (error) {
     console.error("Error updating profile:", error);

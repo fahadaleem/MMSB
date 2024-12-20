@@ -10,6 +10,7 @@ const authRoutes = require("./routes/authRoutes");
 const screenContentRoutes = require("./routes/screenContentRoutes");
 const entityRoutes = require("./routes/entityRoutes");
 const uploadRoutes = require("./routes/uploadRoutes");
+const clientRoutes = require("./routes/clientRoutes");
 
 const app = express();
 const server = http.createServer(app); // Create an HTTP server
@@ -43,7 +44,7 @@ io.on("connection", (socket) => {
 });
 
 // Use routes after setting up Socket.IO
-app.use("/api", roomRoutes, doctorRoutes, screenContentRoutes, authRoutes, entityRoutes, uploadRoutes);
+app.use("/api", roomRoutes, doctorRoutes, screenContentRoutes, authRoutes, entityRoutes, uploadRoutes, clientRoutes);
 
 // Start the server
 server.listen(PORT, () => {
