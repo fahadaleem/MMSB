@@ -11,7 +11,7 @@ dotenv.config();
 
 // Signup Route
 router.post("/signup", async (req, res) => {
-  const { name, email, password } = req.body;
+  const { name, email, password, client_name, client_img_url } = req.body;
 
   try {
     // Check if the user already exists
@@ -21,7 +21,7 @@ router.post("/signup", async (req, res) => {
     }
 
     // Create a new user
-    user = new User({ name, email, password });
+    user = new User({ name, email, password, client_name, client_img_url });
 
     // Save user to database
     await user.save();
@@ -88,8 +88,8 @@ router.post("/login", async (req, res) => {
 });
 
 // Change Password Route
-router.patch("/change-password", async (req, res) => {
-  const { email, current_password, new_password } = req.body;
+router.patch("/update-profile", async (req, res) => {
+  const { email, current_password, new_password, client_name, client_img_url } = req.body;
 
   try {
     // Find the user by email
@@ -102,25 +102,39 @@ router.patch("/change-password", async (req, res) => {
       });
     }
 
-    // Verify the current password
-    const isMatch = await user.matchPassword(current_password);
-    if (!isMatch) {
-      return res.status(400).json({
-        status: "error",
-        message: "Current password is incorrect",
-      });
+    // If the current_password and new_password are provided, validate and update the password
+    if (current_password && new_password) {
+      const isMatch = await user.matchPassword(current_password);
+      if (!isMatch) {
+        return res.status(400).json({
+          status: "error",
+          message: "Current password is incorrect",
+        });
+      }
+
+      // Update the user's password
+      user.password = new_password;
     }
 
-    // Update the user's password
-    user.password = new_password;
+    // Update client_name if provided
+    if (client_name) {
+      user.client_name = client_name;
+    }
+
+    // Update client_img_url if provided
+    if (client_img_url) {
+      user.client_img_url = client_img_url;
+    }
+
+    // Save the updated user details
     await user.save();
 
     res.status(200).json({
       status: "success",
-      message: "Password updated successfully",
+      message: "Profile updated successfully",
     });
   } catch (error) {
-    console.error("Error changing password:", error);
+    console.error("Error updating profile:", error);
     res.status(500).json({
       status: "error",
       message: "Server error",

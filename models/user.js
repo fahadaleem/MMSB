@@ -21,6 +21,13 @@ const UserSchema = new mongoose.Schema({
     type: Date,
     default: Date.now,
   },
+  client_name: {
+    type: String,
+    required: true,
+  },
+  client_img_url: {
+    type: String,
+  },
 });
 
 // Hashing the password before saving
