@@ -1,7 +1,6 @@
 // routes/auth.js
 const express = require("express");
 const User = require("../models/user");
-const Client = require("../models/client");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const router = express.Router();
@@ -12,7 +11,7 @@ dotenv.config();
 
 // Signup Route
 router.post("/signup", async (req, res) => {
-  const { name, email, password, client_name, client_image_url } = req.body;
+  const { name, email, password } = req.body;
   try {
     // Check if the user already exists
     let user = await User.findOne({ email });
@@ -20,17 +19,8 @@ router.post("/signup", async (req, res) => {
       return res.status(400).json({ status: "error", message: "User already exists" });
     }
 
-    // Check if the client already exists
-    let client = await Client.findOne({ client_name });
-
-    // If client doesn't exist, create a new client
-    if (!client) {
-      client = new Client({ client_name, client_image_url });
-      await client.save();
-    }
-
     // Create a new user and associate it with the client
-    user = new User({ name, email, password, client: client._id }); // Add client reference to user
+    user = new User({ name, email, password }); // Add client reference to user
 
     // Hash password before saving
     await user.save();
@@ -49,7 +39,6 @@ router.post("/signup", async (req, res) => {
       message: "User created successfully",
       data: {
         ...user,
-        client: { client_name: client.client_name, client_image_url: client.client_image_url },
         token,
       },
     });
@@ -65,7 +54,7 @@ router.post("/login", async (req, res) => {
 
   try {
     // Check if the user exists
-    let user = await User.findOne({ email }).populate("client"); // Populate client info
+    let user = await User.findOne({ email }); // Populate client info
 
     if (!user) {
       return res.status(400).json({ status: "error", message: "Invalid email or password" });
@@ -88,9 +77,6 @@ router.post("/login", async (req, res) => {
     // Include client information in the response
     const responseData = {
       ...user,
-      client: user.client
-        ? { client_name: user.client.client_name, client_image_url: user.client.client_image_url }
-        : null,
       token,
     };
 
@@ -107,70 +93,40 @@ router.post("/login", async (req, res) => {
 
 // Change Password Route
 
-router.patch("/update-profile", async (req, res) => {
-  const { email, current_password, new_password, client_name, client_image_url } = req.body;
+router.patch("/change-password", async (req, res) => {
+  const { email, current_password, new_password } = req.body;
 
   try {
-    // Check if the request is to update both user and client fields
-    let user;
-    let client;
-    user = await User.findOne({ email });
-    if (client_image_url) {
-      client = await Client.findById(user.client); // Assuming client email is unique
-      if (!client) {
-        return res.status(404).json({
-          status: "error",
-          message: "Client not found",
-        });
-      }
+    // Find the user by email
+    const user = await User.findOne({ email });
 
-      // Update client_img_url if provided
-      if (client_image_url) {
-        await client.updateOne({ client_image_url });
-      }
+    if (!user) {
+      return res.status(404).json({
+        status: "error",
+        message: "User not found",
+      });
     }
 
-    // If the current_password and new_password are provided, validate and update the password
-    if (current_password && new_password) {
-      user = await User.findOne({ email });
-
-      if (!user) {
-        return res.status(404).json({
-          status: "error",
-          message: "User not found",
-        });
-      }
-
-      const isMatch = await user.matchPassword(current_password);
-      if (!isMatch) {
-        return res.status(400).json({
-          status: "error",
-          message: "Current password is incorrect",
-        });
-      }
-
-      // Update the user's password
-      user.password = new_password;
-
-      // Save the updated user details
-      await user.save();
+    // Verify the current password
+    const isMatch = await user.matchPassword(current_password);
+    if (!isMatch) {
+      return res.status(400).json({
+        status: "error",
+        message: "Current password is incorrect",
+      });
     }
 
-    // Send a combined success response
+    // Update the user's password
+    user.password = new_password;
 
-    user = await User.findOne({ email }).populate("client");
-    user = { ...user.toObject() };
-    delete user["password"];
+    await user.save();
 
     res.status(200).json({
       status: "success",
-      message: "Profile updated successfully!!",
-      data: {
-        ...user,
-      },
+      message: "Password updated successfully",
     });
   } catch (error) {
-    console.error("Error updating profile:", error);
+    console.error("Error changing password:", error);
     res.status(500).json({
       status: "error",
       message: "Server error",
