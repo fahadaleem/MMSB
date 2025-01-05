@@ -1,6 +1,6 @@
 // routes/auth.js
 const express = require("express");
-const User = require("../models/user");
+// const User = require("../models/user");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const router = express.Router();
@@ -13,6 +13,7 @@ dotenv.config();
 router.post("/signup", async (req, res) => {
   const { name, email, password } = req.body;
   try {
+    const User = req.db.model("User");
     // Check if the user already exists
     let user = await User.findOne({ email });
     if (user) {
@@ -53,6 +54,7 @@ router.post("/login", async (req, res) => {
   const { email, password } = req.body;
 
   try {
+    const User = req.db.model("User");
     // Check if the user exists
     let user = await User.findOne({ email }); // Populate client info
 
@@ -97,6 +99,7 @@ router.patch("/change-password", async (req, res) => {
   const { email, current_password, new_password } = req.body;
 
   try {
+    const User = req.db.model("User");
     // Find the user by email
     const user = await User.findOne({ email });
 

@@ -1,4 +1,4 @@
-const Room = require("../../models/room");
+// const Room = require("../../models/room");
 const moment = require("moment-timezone");
 
 const express = require("express");
@@ -29,12 +29,6 @@ function getRoomStatus(roomDetails, offSet) {
 
     // // Only check if both check-in and check-out times are valid dates
     if (checkInTime && checkOutTime) {
-      console.log(currentTime);
-      console.log(checkInTime);
-      console.log(checkOutTime);
-      console.log(currentTime >= checkInTime);
-      console.log(currentTime <= checkOutTime);
-      console.log(currentTime >= checkInTime && currentTime <= checkOutTime);
       return currentTime >= checkInTime && currentTime <= checkOutTime;
     }
 
@@ -53,13 +47,9 @@ function getRoomStatusWithTimeZone(roomDetails) {
   // Check if any entry's check-in and check-out matches the current time
   const isOccupied = roomDetails.entities.some((entity) => {
     // Parse check-in and check-out times in Riyadh timezone
-    const checkInTime = entity.check_in
-      ? moment.tz(entity.check_in, "Asia/Riyadh")
-      : null;
+    const checkInTime = entity.check_in ? moment.tz(entity.check_in, "Asia/Riyadh") : null;
 
-    const checkOutTime = entity.check_out
-      ? moment.tz(entity.check_out, "Asia/Riyadh")
-      : null;
+    const checkOutTime = entity.check_out ? moment.tz(entity.check_out, "Asia/Riyadh") : null;
 
     // Validate the presence of both check-in and check-out times
     if (checkInTime && checkOutTime) {
@@ -91,13 +81,9 @@ function getActiveEntityWithTimeZone(roomDetails) {
 
   const isOccupied = roomDetails.entities.some((entity) => {
     // Parse check-in and check-out times in Riyadh timezone
-    const checkInTime = entity.check_in
-      ? moment.tz(entity.check_in, "Asia/Riyadh")
-      : null;
+    const checkInTime = entity.check_in ? moment.tz(entity.check_in, "Asia/Riyadh") : null;
 
-    const checkOutTime = entity.check_out
-      ? moment.tz(entity.check_out, "Asia/Riyadh")
-      : null;
+    const checkOutTime = entity.check_out ? moment.tz(entity.check_out, "Asia/Riyadh") : null;
 
     // Validate the presence of both check-in and check-out times
     if (checkInTime && checkOutTime) {
@@ -121,11 +107,11 @@ function getActiveEntityWithTimeZone(roomDetails) {
   };
 }
 
-
 // Add or update room information
 // POST request: Create a new room if it doesn't already exist
 router.post("/rooms", async (req, res) => {
   try {
+    const Room = req.db.model("Room");
     const { room_id, status = "vacant", media_content, floor_no, meeting_agenda, entities } = req.body;
 
     // Check if a room with the same room_id already exists
@@ -170,6 +156,7 @@ router.post("/rooms", async (req, res) => {
 // PUT request: Update existing room details
 router.put("/rooms/:room_id", async (req, res) => {
   try {
+    const Room = req.db.model("Room");
     const { room_id } = req.params;
     const timezoneOffset = req.headers["timezone-offset"];
     const { status, media_content, floor_no, meeting_agenda, entities } = req.body;
@@ -223,6 +210,7 @@ router.put("/rooms/:room_id", async (req, res) => {
 // DELETE request: Delete an existing room by room_id
 router.delete("/rooms/:_id", async (req, res) => {
   try {
+    const Room = req.db.model("Room");
     const { _id } = req.params;
 
     // Find and delete the room by room_id
@@ -253,6 +241,7 @@ router.delete("/rooms/:_id", async (req, res) => {
 
 router.get("/rooms", async (req, res) => {
   try {
+    const Room = req.db.model("Room");
     const timezoneOffset = req.headers["timezone-offset"];
     // Extract page and limit from query parameters; set defaults if not provided
     const page = parseInt(req.query.page) || 1;
@@ -305,6 +294,7 @@ router.get("/rooms", async (req, res) => {
 // Get room information by room_id
 router.get("/rooms/:id", async (req, res) => {
   try {
+    const Room = req.db.model("Room");
     const roomId = req.params.id;
     const timezoneOffset = req.headers["timezone-offset"];
 
@@ -323,7 +313,7 @@ router.get("/rooms/:id", async (req, res) => {
     res.status(200).json({
       status: "success",
       message: "Room retrieved successfully",
-      data: {...room.toObject(), activeEntity: active.occupiedEntity },
+      data: { ...room.toObject(), activeEntity: active.occupiedEntity },
     });
   } catch (error) {
     console.error("Error retrieving room:", error);

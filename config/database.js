@@ -1,19 +1,26 @@
 const mongoose = require("mongoose");
-require("dotenv").config();
 
-const connectionString =
-  "mongodb+srv://muhammadfahadaleem:ImGlGuQHFGlWJPPM@cluster0.poek6.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0";
+const connections = {}; // Cache connections for tenants
 
-mongoose
-  .connect(connectionString, {
+async function getTenantConnection(tenantId, connectionString) {
+  if (connections[tenantId]) {
+    return connections[tenantId];
+  }
+
+  const connection = mongoose.createConnection(connectionString, {
     useNewUrlParser: true,
     useUnifiedTopology: true,
-  })
-  .then(() => {
-    console.log("Connected to MongoDB");
-  })
-  .catch((error) => {
-    console.error("Error connecting to MongoDB:", error);
   });
 
-module.exports = mongoose.connection;
+  // Example of binding models dynamically
+  connection.model("User", require("../models/user")); // Add your models here
+  connection.model("Doctor", require("../models/doctor"));
+  connection.model("Client", require("../models/client"));
+  connection.model("Entity", require("../models/entity"));
+  connection.model("Room", require("../models/room"));
+
+  connections[tenantId] = connection;
+  return connection;
+}
+
+module.exports = { getTenantConnection };

@@ -5,4 +5,4 @@ const ClientSchema = new mongoose.Schema({
   client_image_url: String,
 });
 
-module.exports = mongoose.model("Client", ClientSchema);
+module.exports = ClientSchema;

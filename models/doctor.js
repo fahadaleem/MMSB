@@ -28,7 +28,7 @@ const DoctorSchema = new Schema({
     type: String,
     required: true,
     match: [/^\d{10,15}$/, "Please enter a valid contact number"], // Validates a number with 10-15 digits
-  },  
+  },
 });
 
-module.exports = mongoose.model("Doctor", DoctorSchema);
+module.exports = DoctorSchema;

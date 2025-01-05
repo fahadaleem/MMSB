@@ -1,8 +1,9 @@
 const express = require("express");
-const db = require("./config/database");
+// const db = require("./config/database");
 const cors = require("cors");
 const http = require("http");
 const { Server } = require("socket.io");
+const tenantMiddleware = require("./middlewares/tenantMiddleware");
 
 const roomRoutes = require("./routes/roomRoutes/roomRoutes");
 const doctorRoutes = require("./routes/doctorRoutes");
@@ -23,6 +24,7 @@ const io = new Server(server, {
 
 app.use(cors());
 app.use(express.json());
+app.use(tenantMiddleware);
 
 const PORT = process.env.PORT || 5104;
 

@@ -1,11 +1,12 @@
 const express = require("express");
 const router = express.Router();
 
-const Entity = require("../models/entity");
+// const Entity = require("../models/entity");
 
 // POST endpoint to add a new entity
 router.post("/entities", async (req, res) => {
   try {
+    const Entity = req.db.model("Entity");
     const { name, specialization, education } = req.body;
 
     // Create a new entity using the data from the request
@@ -32,6 +33,8 @@ router.post("/entities", async (req, res) => {
 
 router.get("/entities", async (req, res) => {
   try {
+    const Entity = req.db.model("Entity");
+
     // Extract page and limit from query parameters; set defaults if not provided
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit);
@@ -74,6 +77,7 @@ router.get("/entities", async (req, res) => {
 // PUT endpoint to update an entity
 router.put("/entities/:id", async (req, res) => {
   try {
+    const Entity = req.db.model("Entity");
     const { id } = req.params;
     const updateData = req.body;
 
@@ -104,6 +108,7 @@ router.put("/entities/:id", async (req, res) => {
 router.delete("/entities/:id", async (req, res) => {
   try {
     const { id } = req.params;
+    const Entity = req.db.model("Entity");
 
     // Find the entity by ID and delete it
     const deletedEntity = await Entity.findByIdAndDelete(id);

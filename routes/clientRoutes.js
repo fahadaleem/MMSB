@@ -1,12 +1,12 @@
 const express = require("express");
 const router = express.Router();
-const Client = require("../models/client"); // Adjust path to Client model
+// const Client = require("../models/client"); // Adjust path to Client model
 
 // API to create a new client
 router.post("/client", async (req, res) => {
   const { client_name, client_image_url } = req.body;
-
   try {
+    const Client = req.db.model("Client");
     // Validate request body
     if (!client_name || !client_image_url) {
       return res.status(400).json({
@@ -42,6 +42,7 @@ router.get("/client/:client_name", async (req, res) => {
   const { client_name } = req.params;
 
   try {
+    const Client = req.db.model("Client");
     const client = await Client.findOne({ client_name });
 
     if (!client) {

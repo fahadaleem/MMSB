@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
 
-const entitySchema = new mongoose.Schema({
+const EntitySchema = new mongoose.Schema({
   name: {
     type: String,
     required: true,
@@ -18,6 +18,4 @@ const entitySchema = new mongoose.Schema({
   },
 });
 
-const Entity = mongoose.model("Entity", entitySchema);
-
-module.exports = Entity;
+module.exports = EntitySchema;
