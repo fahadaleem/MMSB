@@ -295,6 +295,7 @@ router.get("/rooms", async (req, res) => {
 router.get("/rooms/:id", async (req, res) => {
   try {
     const Room = req.db.model("Room");
+    console.log(req.db);
     const roomId = req.params.id;
     const timezoneOffset = req.headers["timezone-offset"];
 
