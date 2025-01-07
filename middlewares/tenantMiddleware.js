@@ -12,7 +12,7 @@ async function tenantMiddleware(req, res, next) {
     // Fetch the connection string from an external server
     const response = await axios.get(`http://bop-api.futurconnect.cloud/tenant/${tenantId}`);
     const connectionString = response.data.tenant_database_string;
-
+    console.log(connectionString, "connectionString");
     if (!connectionString) {
       return res.status(500).json({ error: "Connection string not found for tenant." });
     }
