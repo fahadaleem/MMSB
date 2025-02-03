@@ -2,8 +2,7 @@ const axios = require("axios");
 const { getTenantConnection } = require("../config/database");
 
 async function tenantMiddleware(req, res, next) {
-  const tenantId = req.headers["Tenant_id"]; // Extract tenant ID from headers
-
+  const tenantId = req.headers["tenant_id"]; // Extract tenant ID from headers
   if (!tenantId) {
     return res.status(400).json({ error: "Tenant ID is missing in the headers." });
   }
