@@ -7,7 +7,7 @@ const router = express.Router();
 router.post("/entities", async (req, res) => {
   try {
     const Entity = req.db.model("Entity");
-    const { name, specialization, education, image } = req.body;
+    const { name, specialization, education, entityPicture: image } = req.body;
 
     // Create a new entity using the data from the request
     const newEntity = new Entity({
