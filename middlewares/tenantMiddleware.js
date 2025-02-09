@@ -3,7 +3,7 @@ const { getTenantConnection } = require("../config/database");
 
 async function tenantMiddleware(req, res, next) {
   console.log("req.headers", req.headers)
-  const tenantId = req.headers["tenant_id"]; // Extract tenant ID from headers
+  const tenantId = req.headers["x-tenant"]; // Extract tenant ID from headers
   if (!tenantId) {
     return res.status(400).json({ error: "Tenant ID is missing in the headers." });
   }
