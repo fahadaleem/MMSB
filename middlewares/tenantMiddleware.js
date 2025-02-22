@@ -2,7 +2,6 @@ const axios = require("axios");
 const { getTenantConnection } = require("../config/database");
 
 async function tenantMiddleware(req, res, next) {
-  console.log("req.headers", req.headers)
   const tenantId = req.headers["x-tenant"]; // Extract tenant ID from headers
   if (!tenantId) {
     return res.status(400).json({ error: "Tenant ID is missing in the headers." });
@@ -10,7 +9,8 @@ async function tenantMiddleware(req, res, next) {
 
   try {
     // Fetch the connection string from an external server
-    const response = await axios.get(`https://bop-api.futurconnect.cloud/tenant/${tenantId}`);
+    // `https://bop-api.futurconnect.cloud/tenant/${tenantId}`
+    const response = await axios.get(`${process.env.TENANT_API}/tenant/${tenantId}`);
     console.log("response", response?.data)
     const connectionString = response.data.tenant_database_string;
     console.log(connectionString, "connectionString");

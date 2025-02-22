@@ -48,6 +48,52 @@ router.post("/signup", async (req, res) => {
     res.status(500).json({ status: "error", message: "Server error" });
   }
 });
+router.post("/register-users", async (req, res) => {
+  const users = req.body.users; // Expecting an array of users [{ name, email, password }, ...]
+  
+  if (!Array.isArray(users) || users.length === 0) {
+    return res.status(400).json({ status: "error", message: "Invalid user data" });
+  }
+
+  try {
+    const User = req.db.model("User");
+    const existingUsers = await User.find({ email: { $in: users.map(u => u.email) } });
+
+    // Filter out users that already exist
+    const newUsers = users.filter(user => !existingUsers.some(eu => eu.email === user.email));
+
+    if (newUsers.length === 0) {
+      return res.status(400).json({ status: "error", message: "All users already exist" });
+    }
+
+    // Hash passwords
+    const bcrypt = require("bcryptjs");
+    const hashedUsers = await Promise.all(
+      newUsers.map(async (user) => ({
+        ...user,
+        password: await bcrypt.hash(user.password, 10),
+      }))
+    );
+
+    // Insert new users into the database
+    const createdUsers = await User.insertMany(hashedUsers);
+
+    // Generate JWT tokens for each user
+    const usersWithTokens = createdUsers.map(user => ({
+      ...user.toObject(),
+      token: jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: "1h" }),
+    }));
+
+    res.status(201).json({
+      status: "success",
+      message: `${createdUsers.length} users created successfully`,
+      data: usersWithTokens.map(({ password, ...user }) => user), // Remove passwords before sending response
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ status: "error", message: "Server error" });
+  }
+});
 
 // Login Route
 router.post("/login", async (req, res) => {
