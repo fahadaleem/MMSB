@@ -33,6 +33,8 @@ app.use((req, res, next) => {
   req.io = io; // Attach `io` instance to the request object
   next();
 });
+let activeAdmins = {}; // Track active admin sessions
+let tenantAdmins = {}; // Stores active admin sessions per tenant
 
 io.on("connection", (socket) => {
   console.log("a user connected");
@@ -40,9 +42,59 @@ io.on("connection", (socket) => {
   // Emit a message back to the client (for testing)
   socket.emit("message", "Welcome to the WebSocket server!");
 
-  socket.on("disconnect", () => {
-    console.log("user disconnected");
+  // socket.on("disconnect", () => {
+  //   console.log("user disconnected");
+  // });
+
+  socket.on("admin_login", ({ adminId, tenantId }) => {
+    console.log("tenantAdmins", { adminId, tenantId })
+    if (!tenantAdmins[tenantId]) {
+      tenantAdmins[tenantId] = { currentAdmin: null, activeSockets: [] };
+    }
+
+    if (
+      tenantAdmins[tenantId].currentAdmin &&
+      tenantAdmins[tenantId].currentAdmin !== adminId
+    ) {
+      // Logout all previous admin sessions for this tenant
+      tenantAdmins[tenantId].activeSockets.forEach((sock) =>
+        io.to(sock).emit("force_logout")
+      );
+      tenantAdmins[tenantId].activeSockets = []; // Clear previous sessions
+    }
+
+    tenantAdmins[tenantId].currentAdmin = adminId;
+    tenantAdmins[tenantId].activeSockets.push(socket.id);
+    io.emit("active_admins", tenantAdmins); // Notify frontend
   });
+
+  socket.on("logout", ({ tenantId }) => {
+    if (tenantAdmins[tenantId]) {
+      console.log("reove ", tenantId)
+      tenantAdmins[tenantId].activeSockets = tenantAdmins[tenantId].activeSockets.filter(
+        (id) => id !== socket.id
+      );
+      if (tenantAdmins[tenantId].activeSockets.length === 0) {
+        delete tenantAdmins[tenantId];
+      }
+      io.emit("active_admins", tenantAdmins);
+    }
+  });
+
+  socket.on("disconnect", () => {
+    Object.keys(tenantAdmins).forEach((tenantId) => {
+      tenantAdmins[tenantId].activeSockets = tenantAdmins[tenantId].activeSockets.filter(
+        (id) => id !== socket.id
+      );
+      if (tenantAdmins[tenantId].activeSockets.length === 0) {
+        delete tenantAdmins[tenantId];
+      }
+    });
+    io.emit("active_admins", tenantAdmins);
+  });
+
+
+
 });
 
 // Use routes after setting up Socket.IO

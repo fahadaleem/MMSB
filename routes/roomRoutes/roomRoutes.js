@@ -87,8 +87,6 @@ function getActiveEntityWithTimeZone(roomDetails) {
 
     // Validate the presence of both check-in and check-out times
     if (checkInTime && checkOutTime) {
-      console.log("Check-In Time (Riyadh):", checkInTime.format());
-      console.log("Check-Out Time (Riyadh):", checkOutTime.format());
 
       // Check if the current time is between check-in and check-out
       if (currentDateTime.isBetween(checkInTime, checkOutTime, null, "[)")) {
