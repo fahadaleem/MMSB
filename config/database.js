@@ -10,6 +10,8 @@ async function getTenantConnection(tenantId, connectionString) {
   const connection = mongoose.createConnection(connectionString, {
     useNewUrlParser: true,
     useUnifiedTopology: true,
+    tls: true,  // Force TLS usage
+    tlsAllowInvalidCertificates: false, // Ensure proper certificate validation
   });
 
   // Example of binding models dynamically
