@@ -4,7 +4,7 @@ const router = express.Router();
 
 // API to create a new client
 router.post("/client", async (req, res) => {
-  const { client_name, client_image_url } = req.body;
+  const { client_name, client_image_url, settings } = req.body;
   try {
     const Client = req.db.model("Client");
     // Validate request body
@@ -19,6 +19,7 @@ router.post("/client", async (req, res) => {
     const newClient = new Client({
       client_name,
       client_image_url,
+      settings
     });
 
     // Save the client to the database
