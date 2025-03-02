@@ -80,10 +80,16 @@ router.put("/entities/:id", async (req, res) => {
   try {
     const Entity = req.db.model("Entity");
     const { id } = req.params;
-    const updateData = req.body;
+    const { name, specialization, education, entityPicture: image } = req.body;
+    
 
     // Update the entity with the provided data
-    const updatedEntity = await Entity.findByIdAndUpdate(id, updateData, {
+    const updatedEntity = await Entity.findByIdAndUpdate(id, {
+      name,
+      specialization,
+      education,
+      image,
+    }, {
       new: true, // Return the updated document
       runValidators: true, // Validate data before updating
     });
