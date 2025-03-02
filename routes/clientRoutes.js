@@ -55,6 +55,32 @@ router.post("/client", async (req, res) => {
     });
   }
 });
+router.get("/client", async (req, res) => {
+
+  try {
+    const Client = req.db.model("Client");
+    const client = await Client.findOne();
+
+    if (!client) {
+      return res.status(404).json({
+        status: "error",
+        message: "Client not found",
+      });
+    }
+
+    res.status(200).json({
+      status: "success",
+      data: client,
+    });
+  } catch (error) {
+    console.error("Error fetching client details:", error);
+    res.status(500).json({
+      status: "error",
+      message: "Server error",
+    });
+  }
+});
+
 
 router.get("/client/:client_name", async (req, res) => {
   const { client_name } = req.params;
