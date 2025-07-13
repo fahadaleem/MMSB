@@ -11,6 +11,7 @@ async function tenantMiddleware(req, res, next) {
     // Fetch the connection string from an external server
     // `https://bop-api.futurconnect.cloud/tenant/${tenantId}`
     const response = await axios.get(`${process.env.TENANT_API}/tenant/${tenantId}`);
+    console.log("response", response)
     const connectionString = response.data.tenant_database_string;
     if(response?.data?.tenant_status === "INACTIVE"){
       return res.status(401).json({ error: "Unauthorized" });
